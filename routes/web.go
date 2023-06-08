@@ -1,0 +1,24 @@
+package routes
+
+import (
+	"github.com/gin-gonic/gin"
+	"gorm-test/app/http/controllers"
+)
+
+func InitialRoutes(route *gin.Engine) {
+
+	groupRoute := route.Group("api/v1")
+
+	groupRoute.GET("/", func(c *gin.Context) {
+		c.JSON(200, "GOLARA API V1")
+	})
+	userRepo := controllers.New()
+	groupRoute.POST("/users", userRepo.CreateUser)
+	groupRoute.GET("/users", userRepo.GetUsers)
+	groupRoute.GET("/users/:id", userRepo.GetUser)
+	groupRoute.PUT("/users/:id", userRepo.UpdateUser)
+	groupRoute.DELETE("/users/:id", userRepo.DeleteUser)
+
+	bookRepo := controllers.NewBookRepo()
+	groupRoute.POST("/books", bookRepo.CreateBook)
+}

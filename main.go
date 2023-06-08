@@ -1,32 +1,52 @@
 package main
 
 import (
+	helmet "github.com/danielkov/gin-helmet"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
-	"gorm-test/controllers"
-	"net/http"
+	"github.com/golobby/container/v3"
+	"gorm-test/config"
+	"gorm-test/routes"
+	"gorm-test/utils"
+	"gorm.io/gorm"
+	"log"
 )
 
 func main() {
-	r := setupRouter()
-	_ = r.Run(":8080")
+	router := setupRouter()
+	log.Fatal(router.Run(":" + utils.GodotEnv("GO_PORT")))
 }
 
 func setupRouter() *gin.Engine {
-	r := gin.Default()
 
-	r.GET("ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, "pong")
+	err := container.NamedSingleton("database", func() *gorm.DB {
+		return config.DatabaseConnection()
+
 	})
+	if err != nil {
+		panic(err)
+	}
 
-	userRepo := controllers.New()
-	r.POST("/users", userRepo.CreateUser)
-	r.GET("/users", userRepo.GetUsers)
-	r.GET("/users/:id", userRepo.GetUser)
-	r.PUT("/users/:id", userRepo.UpdateUser)
-	r.DELETE("/users/:id", userRepo.DeleteUser)
-
-	return r
+	router := gin.Default()
+	router.SetTrustedProxies([]string{
+		utils.GodotEnv("USER_GRPC_HOST"),
+	})
+	if utils.GodotEnv("GO_ENV") != "production" && utils.GodotEnv("GO_ENV") != "test" {
+		gin.SetMode(gin.DebugMode)
+	} else if utils.GodotEnv("GO_ENV") == "test" {
+		gin.SetMode(gin.TestMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:  []string{"*"},
+		AllowMethods:  []string{"*"},
+		AllowHeaders:  []string{"*"},
+		AllowWildcard: true,
+	}))
+	router.Use(helmet.Default())
+	router.Use(gzip.Gzip(gzip.BestCompression))
+	routes.InitialRoutes(router)
+	return router
 }
-
-
-
