@@ -28,15 +28,28 @@ func (repository *BookRepo) CreateBook(ctx *gin.Context) {
 	if !requests.BookCreateRequestHandler(ctx, &book) {
 		return
 	}
-
+	user, _ := ctx.Get("user")
+	book.UserId = user.(*models.User).ID
 	err := repository.BookModel.CreateBook(&book)
 	if err != nil {
 		utils.FailedResponse(ctx, "Server Error", http.StatusInternalServerError, err)
 		return
 	}
 	var bookResource resources.BookResource
-	//utils.MakeResponse(book, &bookResource)
 	response := utils.Responses{}
 	response.MakeResponse(book, &bookResource).SuccessResponse(ctx, bookResource, "ok", 200)
-	//utils.SuccessResponse(ctx, bookResource, "ok", 200)
+}
+
+func (repository *BookRepo) Books(ctx *gin.Context) {
+	var book []models.Book
+	user, _ := ctx.Get("user")
+	userId := user.(*models.User).ID
+	err := repository.BookModel.Books(int(userId), &book)
+	if err != nil {
+		utils.FailedResponse(ctx, "Server Error", http.StatusInternalServerError, err)
+		return
+	}
+	var bookResource []resources.BookResource
+	response := utils.Responses{}
+	response.MakeResponse(book, &bookResource).SuccessResponse(ctx, bookResource, "ok", 200)
 }

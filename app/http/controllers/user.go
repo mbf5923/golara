@@ -26,7 +26,6 @@ func (repository *UserRepo) CreateUser(ctx *gin.Context) {
 	if !requests.UserRegisterRequestHandler(ctx, &userModel) {
 		return
 	}
-
 	err := repository.UserModel.CreateUser(&userModel)
 	if err != nil {
 		utils.FailedResponse(ctx, "Create User Error", 500, err)
@@ -46,15 +45,8 @@ func (repository *UserRepo) GetUsers(ctx *gin.Context) {
 		return
 	}
 	var userResource []resources.UserResource
-
-	//status := utils.MakeResponse(user, &userResource)
-	//if !status {
-	//	utils.FailedResponse(ctx, "get users error", 500, nil)
-	//	return
-	//}
 	response := utils.Responses{}
 	response.MakeResponse(user, &userResource).SuccessResponse(ctx, userResource, "ok", 200)
-	//utils.SuccessResponse(ctx, userResource, "OK", 200)
 }
 
 func (repository *UserRepo) GetUser(ctx *gin.Context) {
@@ -70,15 +62,8 @@ func (repository *UserRepo) GetUser(ctx *gin.Context) {
 		return
 	}
 	var userResource resources.UserResource
-	//status := utils.MakeResponse(user, &userResource)
-	//if !status {
-	//	utils.FailedResponse(ctx, "get users error", 500, nil)
-	//	return
-	//}
-
 	response := utils.Responses{}
 	response.MakeResponse(user, &userResource).SuccessResponse(ctx, userResource, "ok", 200)
-	//utils.SuccessResponse(ctx, userResource, "OK", 200)
 }
 func (repository *UserRepo) UpdateUser(ctx *gin.Context) {
 	var user models.User
@@ -100,12 +85,6 @@ func (repository *UserRepo) UpdateUser(ctx *gin.Context) {
 		return
 	}
 	var userResource resources.UserResource
-	//status := utils.MakeResponse(user, &userResource)
-	//if !status {
-	//	utils.FailedResponse(ctx, "get users error", 500, nil)
-	//	return
-	//}
-	//utils.SuccessResponse(ctx, userResource, "OK", 200)
 	response := utils.Responses{}
 	response.MakeResponse(user, &userResource).SuccessResponse(ctx, userResource, "ok", 200)
 }
@@ -118,7 +97,6 @@ func (repository *UserRepo) DeleteUser(ctx *gin.Context) {
 		utils.FailedResponse(ctx, "Server Error", http.StatusInternalServerError, err)
 		return
 	}
-	//utils.SuccessResponse(ctx, nil, "User deleted successfully", 200)
 	response := utils.Responses{}
 	response.SuccessResponse(ctx, nil, "ok", 200)
 }

@@ -24,10 +24,6 @@ func DatabaseConnection() *gorm.DB {
 		logrus.Fatal(err.Error())
 	}
 
-	if os.Getenv("GO_ENV") != "production" {
-		logrus.Info("Connection to Database Successfully")
-	}
-
 	err = db.AutoMigrate(
 		&models.User{},
 		&models.Book{},
@@ -36,6 +32,9 @@ func DatabaseConnection() *gorm.DB {
 	if err != nil {
 		logrus.Fatal(err.Error())
 	}
-
+	if os.Getenv("GO_ENV") != "production" {
+		logrus.Info("Connection to Database Successfully")
+		return db.Debug()
+	}
 	return db
 }

@@ -1,7 +1,8 @@
 package resources
 
 type BookResource struct {
-	ID    uint   `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID          uint   `json:"id"`
+	UserId      uint   `json:"user_id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }

@@ -8,8 +8,8 @@ import (
 )
 
 type bookCreateRequest struct {
-	Name  string `json:"name" validate:"required,min=4,max=15" `
-	Email string `json:"email" validate:"required,email" gpc:"required=Email Is Require"`
+	Title       string `json:"title" validate:"required,min=4,max=255" `
+	Description string `json:"description" validate:"required" gpc:"required=Email Is Require"`
 }
 
 func BookCreateRequestHandler(ctx *gin.Context, bookModel *models.Book) bool {
@@ -24,7 +24,7 @@ func BookCreateRequestHandler(ctx *gin.Context, bookModel *models.Book) bool {
 		return false
 	}
 	response := utils.Responses{}
-	_ = response.MakeResponse(bookCreateRequest, &bookModel)
+	response.MakeResponse(bookCreateRequest, &bookModel)
 
 	return true
 }

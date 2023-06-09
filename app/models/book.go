@@ -3,13 +3,16 @@ package models
 import (
 	"github.com/golobby/container/v3"
 	"gorm.io/gorm"
+	"time"
 )
 
 type Book struct {
-	gorm.Model
-	ID    int
-	Name  string
-	Email string
+	ID          uint   `gorm:"primaryKey;"`
+	UserId      uint   `gorm:"type:int;not null" json:"user_id"`
+	Title       string `gorm:"type:varchar(255);not null"`
+	Description string `gorm:"type:varchar(500);not null"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type BookModel struct {
@@ -31,4 +34,14 @@ func (bookModel *BookModel) CreateBook(Book *Book) (err error) {
 		return err
 	}
 	return nil
+}
+
+// Books return all books by user
+func (bookModel *BookModel) Books(userId int, book *[]Book) (err error) {
+	err = bookModel.database.Where("user_id = ?", userId).Find(book).Error
+	if err != nil {
+		return err
+	}
+	return nil
+
 }

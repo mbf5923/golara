@@ -8,7 +8,7 @@ import (
 )
 
 type userRegisterRequest struct {
-	Name     string `json:"name" validate:"required,min=4,max=15" `
+	Name     string `json:"name" validate:"required,min=4,max=255" `
 	Email    string `json:"email" validate:"required,email" gpc:"required=Email is require"`
 	Password string `json:"password" validate:"required,min=4,max=15" gpc:"required=Password Is Require,min=minimum char for password is 4"`
 }
@@ -18,9 +18,9 @@ type userGetByIdRequest struct {
 }
 
 type userUpdateRequest struct {
-	Name     string `json:"name" validate:"min=4,max=15" `
-	Email    string `json:"email" validate:"email"`
-	Password string `json:"password" validate:"min=4,max=15" gpc:"min=minimum char for password is 4"`
+	Name     string `json:"name,omitempty" validate:"omitempty,min=4,max=255" `
+	Email    string `json:"email,omitempty" validate:"omitempty,email"`
+	Password string `json:"password,omitempty" validate:"omitempty,min=4,max=15" gpc:"min=minimum char for password is 4"`
 }
 
 func UserRegisterRequestHandler(ctx *gin.Context, userModel *models.User) bool {
@@ -34,8 +34,22 @@ func UserRegisterRequestHandler(ctx *gin.Context, userModel *models.User) bool {
 		utils.FailedResponse(ctx, "validation Error", 422, res)
 		return false
 	}
+	// Check if email already exist
+	userTable := models.NewUserModel()
+	if exist, err := userTable.CheckExistUserByEmail(userRegisterRequest.Email); err != nil {
+		utils.FailedResponse(ctx, "Internal Server Error", 500, nil)
+		return false
+	} else {
+		if exist {
+			e := make(map[string]string)
+			e["email"] = "Email Already Exist"
+			utils.FailedResponse(ctx, "Email Already Exist", 422, e)
+			return false
+		}
+	}
+
 	response := utils.Responses{}
-	_ = response.MakeResponse(userRegisterRequest, &userModel)
+	response.MakeResponse(userRegisterRequest, &userModel)
 
 	return true
 }
@@ -52,14 +66,13 @@ func UserGetByIdRequestHandler(ctx *gin.Context, userModel *models.User) bool {
 		return false
 	}
 	response := utils.Responses{}
-	_ = response.MakeResponse(userGetByIdRequest, &userModel)
-
+	response.MakeResponse(userGetByIdRequest, &userModel)
 	return true
 }
 
 func UserUpdateRequestHandler(ctx *gin.Context, userModel *models.User) bool {
 	var userUpdateRequest userUpdateRequest
-	err := ctx.ShouldBind(&userUpdateRequest)
+	err := ctx.ShouldBindJSON(&userUpdateRequest)
 	if err != nil {
 		return false
 	}
@@ -69,7 +82,6 @@ func UserUpdateRequestHandler(ctx *gin.Context, userModel *models.User) bool {
 		return false
 	}
 	response := utils.Responses{}
-	_ = response.MakeResponse(userUpdateRequest, &userModel)
-
+	response.MakeResponse(userUpdateRequest, &userModel)
 	return true
 }
