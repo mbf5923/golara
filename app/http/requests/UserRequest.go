@@ -23,6 +23,11 @@ type userUpdateRequest struct {
 	Password string `json:"password,omitempty" validate:"omitempty,min=4,max=15" gpc:"min=minimum char for password is 4"`
 }
 
+type userLoginRequest struct {
+	Email    string `json:"email" validate:"required,email" gpc:"required=Email is require"`
+	Password string `json:"password" validate:"required,min=4,max=15" gpc:"required=Password Is Require,min=minimum char for password is 4"`
+}
+
 func UserRegisterRequestHandler(ctx *gin.Context, userModel *models.User) bool {
 	var userRegisterRequest userRegisterRequest
 	err := ctx.ShouldBindJSON(&userRegisterRequest)
@@ -83,5 +88,21 @@ func UserUpdateRequestHandler(ctx *gin.Context, userModel *models.User) bool {
 	}
 	response := utils.Responses{}
 	response.MakeResponse(userUpdateRequest, &userModel)
+	return true
+}
+
+func UserLoginRequestHandler(ctx *gin.Context, userModel *models.User) bool {
+	var userLoginRequest userLoginRequest
+	err := ctx.ShouldBindJSON(&userLoginRequest)
+	if err != nil {
+		return false
+	}
+	res, _ := utilsValidator.Validator(userLoginRequest)
+	if res != nil {
+		utils.FailedResponse(ctx, "validation Error", 422, res)
+		return false
+	}
+	response := utils.Responses{}
+	response.MakeResponse(userLoginRequest, &userModel)
 	return true
 }

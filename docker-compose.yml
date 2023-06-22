@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8080"
+    networks:
+      - my_network
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
+    # run app container after db container
+    # command: bash -c "sleep 10 && python manage.py runserver
+  db:
+    image: mariadb:latest
+    hostname: db
+    ports:
+      - "3306:3306"
+    volumes:
+      - .docker/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+      - ./datadir:/var/lib/mysql
+    environment:
+      MARIADB_ROOT_PASSWORD: ''
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: true
+      MARIADB_MYSQL_LOCALHOST_USER: 1
+      MARIADB_MYSQL_LOCALHOST_GRANTS: USAGE
+    networks:
+      - my_network
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh", "--connect" ,"--innodb_initialized"]
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+networks:
+  my_network:
+    name: "my_network"
+    external: true

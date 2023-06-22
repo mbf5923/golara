@@ -22,7 +22,7 @@ func Auth() gin.HandlerFunc {
 		UserModel := models.NewUserModel()
 
 		err := UserModel.GetUserByApiKey(&userModel, token)
-		if err != nil {
+		if err != nil || userModel.ID == 0 {
 			utils.FailedResponse(ctx, "accessToken invalid or expired", http.StatusUnauthorized, nil)
 			defer ctx.AbortWithStatus(http.StatusUnauthorized)
 			return

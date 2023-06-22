@@ -24,8 +24,11 @@ func New() *UserRepo {
 func (repository *UserRepo) CreateUser(ctx *gin.Context) {
 	var userModel models.User
 	if !requests.UserRegisterRequestHandler(ctx, &userModel) {
+		utils.FailedResponse(ctx, "Validation Error", 422, nil)
 		return
 	}
+	// make password md5 hash
+	userModel.Password = utils.Md5Hash(userModel.Password)
 	err := repository.UserModel.CreateUser(&userModel)
 	if err != nil {
 		utils.FailedResponse(ctx, "Create User Error", 500, err)
@@ -99,4 +102,35 @@ func (repository *UserRepo) DeleteUser(ctx *gin.Context) {
 	}
 	response := utils.Responses{}
 	response.SuccessResponse(ctx, nil, "ok", 200)
+}
+
+func (repository *UserRepo) Login(ctx *gin.Context) {
+	var user models.User
+	requests.UserLoginRequestHandler(ctx, &user)
+	//generate api key
+	apiKey := utils.GenerateRandomString()
+
+	err := repository.UserModel.LoginUser(&user, user.Email, utils.Md5Hash(user.Password))
+	if err != nil {
+		utils.FailedResponse(ctx, "Email or Password is wrong", http.StatusUnauthorized, err)
+		return
+	}
+
+	if user.ID == 0 {
+		utils.FailedResponse(ctx, "Email or Password is wrong", http.StatusUnauthorized, err)
+		return
+	}
+	user.ApiKey = &apiKey
+	err = repository.UserModel.UpdateApiKey(&user)
+
+	if err != nil {
+		utils.FailedResponse(ctx, "Server Error", http.StatusInternalServerError, err)
+		return
+	}
+	response := utils.Responses{}
+	data := map[string]string{
+		"api_key": apiKey,
+	}
+	response.SuccessResponse(ctx, data, "ok", 200)
+
 }

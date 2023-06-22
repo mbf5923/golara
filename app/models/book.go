@@ -11,6 +11,7 @@ type Book struct {
 	UserId      uint   `gorm:"type:int;not null" json:"user_id"`
 	Title       string `gorm:"type:varchar(255);not null"`
 	Description string `gorm:"type:varchar(500);not null"`
+	Price       uint64 `gorm:"default:0"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }

@@ -14,6 +14,7 @@ func InitialRoutes(route *gin.Engine) {
 	})
 	userRepo := controllers.New()
 	groupRoute.POST("/users", userRepo.CreateUser)
+	groupRoute.POST("/users/login", userRepo.Login)
 	groupRoute.GET("/users", userRepo.GetUsers)
 	groupRoute.GET("/users/:id", userRepo.GetUser)
 	groupRoute.PUT("/users/:id", userRepo.UpdateUser)

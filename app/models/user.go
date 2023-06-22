@@ -7,12 +7,12 @@ import (
 )
 
 type User struct {
-	ID        uint   `gorm:"primaryKey;"`
-	Name      string `gorm:"type:varchar(255);unique;not null"`
-	Email     string `gorm:"type:varchar(255);unique;not null"`
-	Password  string `gorm:"type:varchar(255);not null"`
-	Active    bool   `gorm:"type:bool;default:false"`
-	ApiKey    string `gorm:"type:varchar(255);unique;null"`
+	ID        uint    `gorm:"column:id;type:INT NOT NULL;primaryKey;autoIncrement:true"`
+	Name      string  `gorm:"column:name;type:varchar(255);unique;not null"`
+	Email     string  `gorm:"column:email;type:varchar(255);unique;not null"`
+	Password  string  `gorm:"column:password;type:varchar(255);not null"`
+	Active    bool    `gorm:"column:active;type:bool;default:false"`
+	ApiKey    *string `gorm:"column:api_key;type:varchar(255);unique;null" json:"omitempty" sql:"DEFAULT:NULL"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -32,6 +32,7 @@ func NewUserModel() *UserModel {
 
 // CreateUser create a user
 func (userModel *UserModel) CreateUser(User *User) (err error) {
+
 	err = userModel.database.Create(User).Error
 	if err != nil {
 		return err
@@ -81,5 +82,17 @@ func (userModel *UserModel) UpdateUser(User *User) (err error) {
 // DeleteUser delete user
 func (userModel *UserModel) DeleteUser(User *User, id uint) (err error) {
 	userModel.database.Where("id = ?", id).Delete(User)
+	return nil
+}
+
+// LoginUser login user
+func (userModel *UserModel) LoginUser(user *User, email string, password string) (err error) {
+	err = userModel.database.Where("email = ? AND password = ?", email, password).Find(&user).Error
+	return
+}
+
+// UpdateApiKey update api key
+func (userModel *UserModel) UpdateApiKey(User *User) (err error) {
+	userModel.database.Save(User)
 	return nil
 }
