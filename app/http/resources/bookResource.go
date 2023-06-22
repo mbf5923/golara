@@ -5,4 +5,5 @@ type BookResource struct {
 	UserId      uint   `json:"user_id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
+	Price       uint64 `json:"price"`
 }

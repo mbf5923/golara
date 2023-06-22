@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm-test/app/http/requests"
 	"gorm-test/app/http/resources"
 	"gorm-test/app/models"
 	"gorm-test/utils"
+	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -50,6 +52,30 @@ func (repository *BookRepo) Books(ctx *gin.Context) {
 		return
 	}
 	var bookResource []resources.BookResource
+	response := utils.Responses{}
+	response.MakeResponse(book, &bookResource).SuccessResponse(ctx, bookResource, "ok", 200)
+}
+
+func (repository *BookRepo) UpdateBook(ctx *gin.Context) {
+	var book models.Book
+	requests.BookGetByIdRequestHandler(ctx, &book)
+	err := repository.BookModel.GetBook(&book, book.ID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			utils.FailedResponse(ctx, "Not Found", http.StatusNotFound, nil)
+			return
+		}
+
+		utils.FailedResponse(ctx, "Server Error", http.StatusInternalServerError, err)
+		return
+	}
+	requests.BookUpdateRequestHandler(ctx, &book)
+	err = repository.BookModel.UpdateBook(&book)
+	if err != nil {
+		utils.FailedResponse(ctx, "Server Error", http.StatusInternalServerError, err)
+		return
+	}
+	var bookResource resources.BookResource
 	response := utils.Responses{}
 	response.MakeResponse(book, &bookResource).SuccessResponse(ctx, bookResource, "ok", 200)
 }

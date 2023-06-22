@@ -7,11 +7,11 @@ import (
 )
 
 type Book struct {
-	ID          uint   `gorm:"primaryKey;"`
-	UserId      uint   `gorm:"type:int;not null" json:"user_id"`
-	Title       string `gorm:"type:varchar(255);not null"`
-	Description string `gorm:"type:varchar(500);not null"`
-	Price       uint64 `gorm:"default:0"`
+	ID          uint    `gorm:"primaryKey;"`
+	UserId      uint    `gorm:"type:int;not null" json:"user_id"`
+	Title       string  `gorm:"type:varchar(255);not null"`
+	Description string  `gorm:"type:varchar(500);not null"`
+	Price       *uint64 `gorm:"default:0"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
@@ -45,4 +45,17 @@ func (bookModel *BookModel) Books(userId int, book *[]Book) (err error) {
 	}
 	return nil
 
+}
+
+func (bookModel *BookModel) GetBook(Book *Book, id uint) (err error) {
+	err = bookModel.database.Where("id = ?", id).Find(Book).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (bookModel *BookModel) UpdateBook(Book *Book) (err error) {
+	bookModel.database.Save(Book)
+	return nil
 }

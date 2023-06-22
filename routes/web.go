@@ -23,4 +23,5 @@ func InitialRoutes(route *gin.Engine) {
 	bookRepo := controllers.NewBookRepo()
 	groupRoute.POST("/books", middleware.Auth(), bookRepo.CreateBook)
 	groupRoute.GET("/books", middleware.Auth(), bookRepo.Books)
+	groupRoute.PUT("/books/:id", middleware.Auth(), bookRepo.UpdateBook)
 }
